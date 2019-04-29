@@ -1,12 +1,12 @@
 const klawSync = require("klaw-sync");
-const path = require("path");
 const fs = require("fs");
-var os = require('os');
-const addre = path.resolve(__dirname, "../../../../../foreign/controller/v1");
-
+var os = require("os");
 class apiDb {
-    constructor() {
-        this.includes = ['.*\\.(clj|cls|coffee|cpp|cs|dart|erl|exs?|go|groovy|ino?|java|js|jsx|litcoffee|lua|p|php?|pl|pm|py|rb|scala|ts|vue)$']
+    constructor(path) {
+        this.addPath = path;
+        this.includes = [
+            ".*\\.(clj|cls|coffee|cpp|cs|dart|erl|exs?|go|groovy|ino?|java|js|jsx|litcoffee|lua|p|php?|pl|pm|py|rb|scala|ts|vue)$"
+        ];
     }
 
     parseFile(filename) {
@@ -68,8 +68,8 @@ class apiDb {
     }
     parseFiles() {
         let filterData = [];
-        let files = klawSync(addre).map(item => item.path);
-        files = this.includeFilters(files)
+        let files = klawSync(this.addPath).map(item => item.path);
+        files = this.includeFilters(files);
         for (let i = 0; i < files.length; i += 1) {
             let newparseFile = this.parseFile(files[i]);
             newparseFile = newparseFile.replace(/\r\n/g, "\n");
@@ -88,10 +88,10 @@ class apiDb {
         const self = this;
         const regExpIncludeFilters = [];
         let filters = self.includes;
-        if (typeof (filters) === 'string') {
+        if (typeof filters === "string") {
             filters = [filters];
         }
-        filters.forEach(function (filter) {
+        filters.forEach(function(filter) {
             console.log(filter.length);
             if (filter.length > 0) {
                 regExpIncludeFilters.push(new RegExp(filter));
@@ -99,14 +99,14 @@ class apiDb {
         });
 
         var length = regExpIncludeFilters.length;
-        files = files.filter(function (filename) {
+        files = files.filter(function(filename) {
             // not include Directories like 'dirname.js/'
             if (fs.statSync(filename).isDirectory()) {
                 return 0;
             }
 
-            if (os.platform() === 'win32') {
-                filename = filename.replace(/\\/g, '/');
+            if (os.platform() === "win32") {
+                filename = filename.replace(/\\/g, "/");
             }
 
             // apply every filter
@@ -118,8 +118,7 @@ class apiDb {
 
             return 0;
         });
-        return files
-
+        return files;
     }
     setData(elements) {
         let elData = elements;
@@ -221,4 +220,4 @@ class apiDb {
     }
 }
 
-export default apiDb;
+module.exports = apiDb;
